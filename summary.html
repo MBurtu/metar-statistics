@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<title>Westerlies.eu - METAR Statistics</title>
+<meta name="description" content="METAR statistical summary for airports in northern Europe, 2011-2018">
+
+<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+
+<link rel="stylesheet" href="css/style_summary.css" type="text/css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+
+</head>
+
+<body class="body_summary">
+
+<div id="map"></div>
+<div class="toggle_map">
+	<div class="tag summary_btn active" id="cavok">
+		<div class="logo sun"><i class="fas fa-sun"></i></div>
+		<div class="plot_name">CAVOK (%)</div>
+	</div>
+	<div class="tag summary_btn" id="imc">
+		<div class="logo cloud_tree"><div class="cloud" style="position:relative;top:-4px;left:3px;z-index:10;"><i class="fas fa-cloud"></i></div><div class="tree" style="position:relative;top:2px;left:-4px;z-index:5;"><i class="fas fa-tree"></i></div></div>
+		<div class="plot_name">IMC (%)</div>
+	</div>
+	<div class="tag summary_btn" id="fog">
+		<div class="logo fg">&nbsp;&equiv;&nbsp;</div>
+		<div class="plot_name">FG/FZFG (%)</div>
+	</div>
+	<div class="tag summary_btn" id="wx">
+		<div class="logo rain_snow"><div class="rain"><i class="fas fa-tint"></i></div> <div class="snow"><i class="far fa-snowflake"></i></div></div>
+		<div class="plot_name">most common WX</div>
+	</div>
+	<div class="tag summary_btn" id="manual">
+		<div class="logo manual_auto"><div class="man"><i class="fas fa-male"></i></div></div>
+		<div class="plot_name">manual METAR (%)</div>
+	</div>
+</div>
+
+<div class="tag info">&nbsp;<i class="fas fa-info-circle"></i>&nbsp;&nbsp; Hover over an airport for more information.</div>
+<div class="tag warning">&nbsp;<i class="fas fa-exclamation-triangle"></i>&nbsp;&nbsp; Number of METAR differs between airports.</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>	
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="js/summary.js"></script>
+
+</body>
+</html>
