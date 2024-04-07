@@ -9,20 +9,30 @@ $(document).ready(function() {
 		switch_tabs($(this));
 	});
  
-	switch_tabs($('.defaulttab'));
+	// Hide everything except default tabs
+	$('ul.tabs > li > a').each(function(){
+		
+		if ($(this).hasClass('defaulttab')) {
+			switch_tabs($(this));
+		}
+		
+	});
  
 });
  
 function switch_tabs(obj) {
-
-	$('.tab-content').hide();
-	$('.tabs a').removeClass("selected");
-	var id = obj.attr("data-tab");
+	
+	let id = obj.attr("data-tab");
+	let setNr = id.substr(0,1);
+	
+	$('[id^='+setNr+'tabs]').hide();
+	$('[data-tab^='+setNr+'tabs]').removeClass("selected");
  
 	$('#'+id).show();
 	obj.addClass("selected");
-
+	
 }
+ 
  
 ////////////////////////
 //  Toggle map & rose
