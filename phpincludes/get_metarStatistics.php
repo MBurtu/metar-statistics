@@ -8,7 +8,7 @@ function issetor(&$var, $default = false) {
 function average($array) {
 	return array_sum($array) / count($array);
 }
-function testCloudIfr($metar) {
+function testCloudIfr($metar) { // IFR
 	$cloud_ifr = false;
 	for ($i=0; $i<sizeof($metar); $i++) {
 		if (substr($metar[$i], 0, 3) == 'BKN' || substr($metar[$i], 0, 3) == 'OVC') {
@@ -24,7 +24,23 @@ function testCloudIfr($metar) {
 	}
 	return $cloud_ifr;
 }
-function testVisIfr($visibility) {
+function testCloudLifr($metar) { // Low IFR
+	$cloud_lifr = false;
+	for ($i=0; $i<sizeof($metar); $i++) {
+		if (substr($metar[$i], 0, 3) == 'BKN' || substr($metar[$i], 0, 3) == 'OVC') {
+			if (substr($metar[$i], 3, 1) == 0 && substr($metar[$i], 4, 1) == 0 && substr($metar[$i], 5, 1) < 5) {
+				$cloud_lifr = true;
+			}
+		}
+		elseif (substr($metar[$i], 0, 2) == 'VV') {
+			if (substr($metar[$i], 2, 1) == 0 && substr($metar[$i], 3, 1) == 0 && substr($metar[$i], 4, 1) < 5) {
+				$cloud_lifr = true;
+			}
+		}
+	}
+	return $cloud_lifr;
+}
+function testVisIfr($visibility) { // IFR
 	$vis_ifr = false;
 	if (substr($visibility, -2, 2) == 'SM') {
 		$visbility = substr($visibility, 0, strlen($visibility) - 2); 
@@ -37,9 +53,21 @@ function testVisIfr($visibility) {
 	}
 	return $vis_ifr;
 }
-function findWeather($metar, $date_time) {
+function testVisLifr($visibility) { // Low IFR
+	$vis_lifr = false;
+	if (substr($visibility, -2, 2) == 'SM') {
+		$visbility = substr($visibility, 0, strlen($visibility) - 2); 
+		if ($visibility < 1) {
+			$vis_lifr = true;
+		}
+	}
+	elseif ($visibility < 3000) {
+		$vis_lifr = true;
+	}
+	return $vis_lifr;
+}
+function findWeather($metar, $date_time, $wx_freq) {
 	$weather_type = [];
-	$fog_date = "";
 	$weather_array = ['SHRA','RA','SHSN','SN','SHSNRA','SNRA','SHRASN','RASN','DZ','RADZ','DZRA','PL','SG','IC','DRSN','BLSN','FZDZ','FZRA','FZFG','FG','BCFG','MIFG','BR','GR','SHGR','GS','SHGS','SHRAGS','TS','TSRA','SQ','DU','BLDU','DRDU','SA','BLSA','DRSA','SS','DS','HZ','FU','PO','PY','FC','VA'];
 	for ($i=0; $i<sizeof($metar); $i++) {
 		if (substr($metar[$i], 0, 1) == '-' || substr($metar[$i], 0, 1) == '+') {
@@ -48,71 +76,21 @@ function findWeather($metar, $date_time) {
 		if (in_array($metar[$i], $weather_array)) {
 			array_push($weather_type, $metar[$i]);
 		}
+		
+		$month = intval(substr($date_time, 5, 2)) - 1;
+		$hour = floatval(substr($date_time, 11, 2)) + 0.5;
+		$time_str = $month.' '.$hour;
 		if ($metar[$i] == 'FG' || $metar[$i] == 'FZFG') {
-			
-			if (substr($date_time,8,2) < 10) {
-				if (substr($date_time,11,2) <= 4) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-05 02';
-				}
-				if (substr($date_time,11,2) <= 8 && substr($date_time,11,2) > 4) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-05 06';
-				}
-				if (substr($date_time,11,2) <= 12 && substr($date_time,11,2) > 8) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-05 10';
-				}
-				if (substr($date_time,11,2) <= 16 && substr($date_time,11,2) > 12) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-05 14';
-				}
-				if (substr($date_time,11,2) <= 20 && substr($date_time,11,2) > 16) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-05 18';
-				}
-				if (substr($date_time,11,2) <= 24 && substr($date_time,11,2) > 20) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-05 22';
-				}
-			}
-			if (substr($date_time,8,2) < 20 && substr($date_time,8,2) >= 10) {
-				if (substr($date_time,11,2) <= 4) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-15 02';
-				}
-				if (substr($date_time,11,2) <= 8 && substr($date_time,11,2) > 4) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-15 06';
-				}
-				if (substr($date_time,11,2) <= 12 && substr($date_time,11,2) > 8) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-15 10';
-				}
-				if (substr($date_time,11,2) <= 16 && substr($date_time,11,2) > 12) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-15 14';
-				}
-				if (substr($date_time,11,2) <= 20 && substr($date_time,11,2) > 16) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-15 18';
-				}
-				if (substr($date_time,11,2) <= 24 && substr($date_time,11,2) > 20) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-15 22';
-				}
-			}
-			if (substr($date_time,8,2) >= 20) {
-				if (substr($date_time,11,2) <= 4) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-25 02';
-				}
-				if (substr($date_time,11,2) <= 8 && substr($date_time,11,2) > 4) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-25 06';
-				}
-				if (substr($date_time,11,2) <= 12 && substr($date_time,11,2) > 8) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-25 10';
-				}
-				if (substr($date_time,11,2) <= 16 && substr($date_time,11,2) > 12) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-25 14';
-				}
-				if (substr($date_time,11,2) <= 20 && substr($date_time,11,2) > 16) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-25 18';
-				}
-				if (substr($date_time,11,2) <= 24 && substr($date_time,11,2) > 20) {
-					$fog_date = '2016-'.substr($date_time,5,2).'-25 22';
-				}
-			}
+			array_push($wx_freq["fg"], $time_str);
+		}
+		if ($metar[$i] == 'FZRA' || $metar[$i] == 'FZDZ') {
+			array_push($wx_freq["fzra"], $time_str);
+		}
+		if ($metar[$i] == 'BR') {
+			array_push($wx_freq["br"], $time_str);
 		}
 	}
-	return array($weather_type, $fog_date);
+	return array($weather_type, $wx_freq);
 }
 
 function findRVR($metar, $date_time) {
@@ -192,13 +170,15 @@ function windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqD
 		$wind_freqDir_gust[$row][0] += $wind05; $wind_freqDir_gust[$row][1] += $wind510; $wind_freqDir_gust[$row][2] += $wind1015; $wind_freqDir_gust[$row][3] += $wind1520; $wind_freqDir_gust[$row][4] += $wind20;
 		return $wind_freqDir_gust;
 	}
-	elseif ($choise == 'cld') {
-		$wind_freqDir_cld[$row][0] += $wind05; $wind_freqDir_cld[$row][1] += $wind510; $wind_freqDir_cld[$row][2] += $wind1015; $wind_freqDir_cld[$row][3] += $wind1520; $wind_freqDir_cld[$row][4] += $wind20;
-		return $wind_freqDir_cld;
+	elseif (substr($choise, 0, 3) == 'cld') {
+	    $key = substr($choise, 3);
+		$wind_freqDir_cld[$key][$row][0] += $wind05; $wind_freqDir_cld[$key][$row][1] += $wind510; $wind_freqDir_cld[$key][$row][2] += $wind1015; $wind_freqDir_cld[$key][$row][3] += $wind1520; $wind_freqDir_cld[$key][$row][4] += $wind20;
+		return $wind_freqDir_cld[$key];
 	}
-	elseif ($choise == 'vis') {
-		$wind_freqDir_vis[$row][0] += $wind05; $wind_freqDir_vis[$row][1] += $wind510; $wind_freqDir_vis[$row][2] += $wind1015; $wind_freqDir_vis[$row][3] += $wind1520; $wind_freqDir_vis[$row][4] += $wind20;
-		return $wind_freqDir_vis;
+	elseif (substr($choise, 0, 3) == 'vis') {
+	    $key = substr($choise, 3);
+		$wind_freqDir_vis[$key][$row][0] += $wind05; $wind_freqDir_vis[$key][$row][1] += $wind510; $wind_freqDir_vis[$key][$row][2] += $wind1015; $wind_freqDir_vis[$key][$row][3] += $wind1520; $wind_freqDir_vis[$key][$row][4] += $wind20;
+		return $wind_freqDir_vis[$key];
 	}
 }
 function cldFreq($metar, $cld_freq) {
@@ -396,7 +376,7 @@ if(isset($_POST["airport"]) && isset($_POST["year1"]) && isset($_POST["month1"])
 			$wind_freqDir_cld = $result[22];
 			$wind_freqDir_vis = $result[23];
 			$rvr_all = $result[24];
-			$fog_dates_freq = $result[25];
+			$wx_freq = $result[25];
 			$lon = $result[26];
 			$lat = $result[27];
 			$elevation = $result[28];
@@ -449,7 +429,7 @@ elseif (isset($_GET["airport"])) {
 		$wind_freqDir_cld = $result[22];
 		$wind_freqDir_vis = $result[23];
 		$rvr_all = $result[24];
-		$fog_dates_freq = $result[25];
+		$wx_freq = $result[25];
 		$lon = $result[26];
 		$lat = $result[27];
 		$elevation = $result[28];
@@ -464,7 +444,6 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 	
 	$date_start = $year1.'-'.$month1.'-'.$day1;
 	$date_end = $year2.'-'.$month2.'-'.$day2;
-	
 	
 	if (substr($airport, 0, 1) == 'K') {
 		$airport = substr($airport, 1, 3);
@@ -492,6 +471,37 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 			$day2 = 30;
 			$season_months = [9, 10, 11];
 		}
+		elseif ($season == "SO") {
+			$month2 = 10;
+			$day2 = 31;
+			$season_months = [9, 10];
+		}
+		elseif ($season == "ND") {
+			$month2 = 12;
+			$day2 = 31;
+			$season_months = [11, 12];
+		}
+		elseif ($season == "S") {
+			$month2 = 9;
+			$day2 = 30;
+			$season_months = [9];
+		}
+		elseif ($season == "O") {
+			$month2 = 10;
+			$day2 = 31;
+			$season_months = [10];
+		}
+		elseif ($season == "N") {
+			$month2 = 11;
+			$day2 = 30;
+			$season_months = [11];
+		}
+		elseif ($season == "D") {
+			$month2 = 12;
+			$day2 = 31;
+			$season_months = [12];
+		}
+		
 	}
 	
 	// Get airport elevation m amsl
@@ -518,10 +528,17 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 	
 	$expl = explode("\n", $temp);
 	
-	$j = $k = $auto = $nr_of_metar = $manual = $ifr = $ifr_cloud = $ifr_vis = $cavok = $temp_sum = $qnh_sum = $gust = $var_wind = 0;
+	$j = $k = $auto = $nr_of_metar = $manual = $ifr = $cavok = $temp_sum = $qnh_sum = $gust = $var_wind = 0;
 	$temp_max = -100; $temp_min = 100; $qnh_max = 0; $qnh_min = 3500; $max_gust = $max_gust_time = $max_wind = $max_wind_time = 0;
-	$wind_dir = $weather = $dir_cloud_imc = $dir_vis_imc = $wind_gust_dir = $dir_var_wind = $fog_dates = $rvr_values = $rvr_dates = [];
-	$vis_freq = $cld_freq = [0, 0, 0, 0]; $wind_freqDir = $wind_freqDir_varWind = $wind_freqDir_gust = $wind_freqDir_cld = $wind_freqDir_vis = array_fill(0, 36, array_fill(0, 5, 0));
+	$wind_dir = $weather = $wind_gust_dir = $dir_var_wind = $rvr_values = $rvr_dates = [];
+	$vis_freq = $cld_freq = [0, 0, 0, 0]; $wind_freqDir = $wind_freqDir_varWind = $wind_freqDir_gust = array_fill(0, 36, array_fill(0, 5, 0));
+	
+	$wind_freqDir_cld = array("ifr" => array_fill(0, 36, array_fill(0, 5, 0)), "lifr" => array_fill(0, 36, array_fill(0, 5, 0)));
+	$wind_freqDir_vis = array("ifr" => array_fill(0, 36, array_fill(0, 5, 0)), "lifr" => array_fill(0, 36, array_fill(0, 5, 0)));
+	$ifr_cloud = $ifr_vis = array("ifr" => 0, "lifr" => 0);
+	$dir_cloud_imc = $dir_vis_imc = array("ifr" => [], "lifr" => []);
+	
+	$wx_freq = array("fg" => [], "fzra" => [], "br" => []);
 	
 	for ($i=1;$i<sizeof($expl)-1;$i++) {
 		
@@ -587,7 +604,7 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 
 			// Höjd över havet
 			//$elevation = (int) $data[4];
-
+            
 			//Plocka ut parametrar
 			if ($metar_type == 'auto' || $metar_type == 'all') {
 				if ($metar_temp[2] == "AUTO") {
@@ -598,7 +615,7 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 						$max_wind = $wind_speed;
 						$max_wind_time = $date_time[$j];
 					}
-					
+				
 					if (substr($metar_temp[3], 5, 1) == 'G') {
 						$wind_gust = (int) substr($metar_temp[3], 6, 2);
 						array_push($wind_gust_dir, $wind_dir[$j]);
@@ -609,7 +626,6 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 						}
 						$gust += 1;
 					}
-					
 					//Om variabel vindriktning
 					if (substr($metar_temp[4], 3, 1) == "V") {
 						$visibility = $metar_temp[5];
@@ -622,14 +638,26 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 						elseif (testCloudIfr($metar_temp) || testVisIfr($visibility)) {
 							$ifr += 1;
 							if (testCloudIfr($metar_temp)) {
-								array_push($dir_cloud_imc, $wind_dir[$j]);
-								$wind_freqDir_cld = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cld');
-								$ifr_cloud += 1;
+								array_push($dir_cloud_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_cld["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldifr');
+								$ifr_cloud["ifr"] += 1;
+							
+								if (testCloudLifr($metar_temp)) {
+    								array_push($dir_cloud_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_cld["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldlifr');
+    								$ifr_cloud["lifr"] += 1;
+							    }
 							}
 							if (testVisIfr($visibility)) {
-								array_push($dir_vis_imc, $wind_dir[$j]);
-								$wind_freqDir_vis = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vis');
-								$ifr_vis += 1;
+								array_push($dir_vis_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_vis["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'visifr');
+								$ifr_vis["ifr"] += 1;
+								
+								if (testVisLifr($visibility)) {
+    								array_push($dir_vis_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_vis["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vislifr');
+    								$ifr_vis["lifr"] += 1;
+							    }
 							}
 						}
 					}
@@ -641,14 +669,26 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 						elseif (testCloudIfr($metar_temp) || testVisIfr($visibility)) {
 							$ifr += 1;
 							if (testCloudIfr($metar_temp)) {
-								array_push($dir_cloud_imc, $wind_dir[$j]);
-								$wind_freqDir_cld = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cld');
-								$ifr_cloud += 1;
+								array_push($dir_cloud_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_cld["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldifr');
+								$ifr_cloud["ifr"] += 1;
+								
+								if (testCloudLifr($metar_temp)) {
+    								array_push($dir_cloud_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_cld["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldlifr');
+    								$ifr_cloud["lifr"] += 1;
+							    }
 							}
 							if (testVisIfr($visibility)) {
-								array_push($dir_vis_imc, $wind_dir[$j]);
-								$wind_freqDir_vis = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vis');
-								$ifr_vis += 1;
+								array_push($dir_vis_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_vis["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'visifr');
+								$ifr_vis["ifr"] += 1;
+								
+								if (testVisLifr($visibility)) {
+    								array_push($dir_vis_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_vis["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vislifr');
+    								$ifr_vis["lifr"] += 1;
+							    }
 							}
 						}
 					}
@@ -664,16 +704,12 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 					}
 					
 					// Weather
-					$find_weather = findWeather($metar_temp, $date_time[$j]);
+					$find_weather = findWeather($metar_temp, $date_time[$j], $wx_freq);
 					$weather_type = $find_weather[0];
 					for ($n=0;$n<sizeof($weather_type);$n++) {
 						array_push($weather, $weather_type[$n]);
 					}
-					// Fog frequency over the year
-					$fog_date = $find_weather[1];
-					if ($fog_date != "") {
-						array_push($fog_dates, $fog_date);
-					}
+					$wx_freq = $find_weather[1];
 					
 					// Temperatur
 					$t_temp = substr($metar_temp[sizeof($metar_temp)-2], 0, 3);
@@ -760,14 +796,26 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 						elseif (testCloudIfr($metar_temp) || testVisIfr($visibility)) {
 							$ifr += 1;
 							if (testCloudIfr($metar_temp)) {
-								array_push($dir_cloud_imc, $wind_dir[$j]);
-								$wind_freqDir_cld = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cld');
-								$ifr_cloud += 1;
+								array_push($dir_cloud_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_cld["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldifr');
+								$ifr_cloud["ifr"] += 1;
+								
+								if (testCloudLifr($metar_temp)) {
+    								array_push($dir_cloud_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_cld["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldlifr');
+    								$ifr_cloud["lifr"] += 1;
+							    }
 							}
 							if (testVisIfr($visibility)) {
-								array_push($dir_vis_imc, $wind_dir[$j]);
-								$wind_freqDir_vis = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vis');
-								$ifr_vis += 1;
+								array_push($dir_vis_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_vis["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'visifr');
+								$ifr_vis["ifr"] += 1;
+								
+								if (testVisLifr($visibility)) {
+    								array_push($dir_vis_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_vis["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vislifr');
+    								$ifr_vis["lifr"] += 1;
+							    }
 							}
 						}
 					}
@@ -779,14 +827,26 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 						elseif (testCloudIfr($metar_temp) || testVisIfr($visibility)) {
 							$ifr += 1;
 							if (testCloudIfr($metar_temp)) {
-								array_push($dir_cloud_imc, $wind_dir[$j]);
-								$wind_freqDir_cld = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cld');
-								$ifr_cloud += 1;
+								array_push($dir_cloud_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_cld["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldifr');
+								$ifr_cloud["ifr"] += 1;
+								
+								if (testCloudLifr($metar_temp)) {
+    								array_push($dir_cloud_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_cld["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'cldlifr');
+    								$ifr_cloud["lifr"] += 1;
+							    }
 							}
 							if (testVisIfr($visibility)) {
-								array_push($dir_vis_imc, $wind_dir[$j]);
-								$wind_freqDir_vis = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vis');
-								$ifr_vis += 1;
+								array_push($dir_vis_imc["ifr"], $wind_dir[$j]);
+								$wind_freqDir_vis["ifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'visifr');
+								$ifr_vis["ifr"] += 1;
+								
+								if (testVisLifr($visibility)) {
+    								array_push($dir_vis_imc["lifr"], $wind_dir[$j]);
+    								$wind_freqDir_vis["lifr"] = windFreq($wind_speed, $wind_freqDir, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $wind_dir[$j], $airport, 'vislifr');
+    								$ifr_vis["lifr"] += 1;
+							    }
 							}
 						}
 					}
@@ -802,16 +862,12 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 					}
 					
 					// Weather
-					$find_weather = findWeather($metar_temp, $date_time[$j]);
+					$find_weather = findWeather($metar_temp, $date_time[$j], $wx_freq);
 					$weather_type = $find_weather[0];
 					for ($n=0;$n<sizeof($weather_type);$n++) {
 						array_push($weather, $weather_type[$n]);
 					}
-					// Fog frequency over the year
-					$fog_date = $find_weather[1];
-					if ($fog_date != "") {
-						array_push($fog_dates, $fog_date);
-					}
+					$wx_freq = $find_weather[1];
 					
 					// Temperatur
 					$t_temp = substr($metar_temp[sizeof($metar_temp)-2], 0, 3);
@@ -877,8 +933,8 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 		$qnh_all = [$qnh_avg, $qnh_max, $qnh_min, $qnh_max_time, $qnh_min_time];
 		
 		$wind_dir_count = array_count_values($wind_dir);
-		$dir_count_cloud_imc = array_count_values($dir_cloud_imc);
-		$dir_count_vis_imc = array_count_values($dir_vis_imc);
+		$dir_count_cloud_imc = array("ifr" => array_count_values($dir_cloud_imc["ifr"]), "lifr" => array_count_values($dir_cloud_imc["lifr"]));
+		$dir_count_vis_imc = array("ifr" => array_count_values($dir_vis_imc["ifr"]), "lifr" => array_count_values($dir_vis_imc["lifr"]));
 		$dir_count_var_wind = array_count_values($dir_var_wind);
 		
 		$ifr_all = [$ifr, $ifr_cloud, $ifr_vis];
@@ -891,7 +947,7 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 		
 		$mean_wind = [$max_wind, $max_wind_time];
 		
-		$fog_dates_freq = array_count_values($fog_dates);
+		$wx_freq = array("fg" => array_count_values($wx_freq["fg"]), "fzra" => array_count_values($wx_freq["fzra"]), "br" => array_count_values($wx_freq["br"]));
 		
 		$rvr_all = [$rvr_values, $rvr_dates];
 		
@@ -905,7 +961,7 @@ function statistics($airport, $year1, $month1, $day1, $year2, $month2, $day2, $y
 			});
 			</script>";
 		
-		return array($nr_of_metar, $auto, $manual, $date_time, $wind_dir_count, $temperature_all, $ifr_all, $cavok, $dir_count_cloud_imc, $dir_count_vis_imc, $qnh_all, $weather_count, $wind_gust_dir_count, $gust_all, $wind_freqDir, $cld_freq, $vis_freq, $dir_count_var_wind, $var_wind, $mean_wind, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $rvr_all, $fog_dates_freq, $lon, $lat, $elevation);
+		return array($nr_of_metar, $auto, $manual, $date_time, $wind_dir_count, $temperature_all, $ifr_all, $cavok, $dir_count_cloud_imc, $dir_count_vis_imc, $qnh_all, $weather_count, $wind_gust_dir_count, $gust_all, $wind_freqDir, $cld_freq, $vis_freq, $dir_count_var_wind, $var_wind, $mean_wind, $wind_freqDir_varWind, $wind_freqDir_gust, $wind_freqDir_cld, $wind_freqDir_vis, $rvr_all, $wx_freq, $lon, $lat, $elevation);
 	}
 	else {
 		$warning = 'No '.$metar_type.' METAR found for '.$airport;
