@@ -6,7 +6,7 @@
 
 <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
 <title>Westerlies.eu - METAR statistics</title>
-<meta name="description" content="METAR statistics for airports in northern Europe, 2011-2020">
+<meta name="description" content="METAR statistics for airports in northern Europe, 2011-2023">
 
 <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
 
@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
   
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/highcharts-more.js"></script>
 <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
@@ -66,6 +66,8 @@
 								<option value="2019">2019</option>
 								<option value="2020">2020</option>
 								<option value="2021">2021</option>
+								<option value="2022">2022</option>
+								<option value="2023">2023</option>
 							</select>
 							<select name="month1">
 								<option value="01">Jan</option>
@@ -131,6 +133,9 @@
 								<option value="2019">2019</option>
 								<option value="2020">2020</option>
 								<option value="2021">2021</option>
+								<option value="2022">2022</option>
+								<option value="2023">2023</option>
+								<option value="2024" selected="selected">2024</option>
 							</select>
 							<select name="month2">
 								<option value="01">Jan</option>
@@ -206,6 +211,8 @@
 								<option value="2019">2019</option>
 								<option value="2020">2020</option>
 								<option value="2021">2021</option>
+								<option value="2022">2022</option>
+								<option value="2023">2023</option>
 							</select>
 						</div>
 						<div class="w10">
@@ -224,6 +231,9 @@
 								<option value="2019">2019</option>
 								<option value="2020">2020</option>
 								<option value="2021">2021</option>
+								<option value="2022">2022</option>
+								<option value="2023">2023</option>
+								<option value="2024" selected="selected">2024</option>
 							</select>
 						</div>
 					</div>
@@ -413,18 +423,92 @@
 			
 			<div class="w50">
 				<ul class="tabs">
-					<li><a href="javascript:void(0)" data-tab="tab1" class="defaulttab">&lt; 1000 ft</a></li>
-					<li><a href="javascript:void(0)" data-tab="tab2">&lt; <?php if(isset($qnh_all[1])){if($qnh_all[0]<2500){echo '5000 m';}else{echo '3 SM';}}?></a></li>
-					<li><a href="javascript:void(0)" data-tab="tab3">gusts</a></li>
-					<li><a href="javascript:void(0)" data-tab="tab4">variable wind</a></li>
-				</ul> 
+				    <li><a href="javascript:void(0)" data-tab="1tabs1">&lt; 500 ft</a></li>
+					<li><a href="javascript:void(0)" data-tab="1tabs2" class="defaulttab">&lt; 1000 ft</a></li>
+					<li><a href="javascript:void(0)" data-tab="1tabs3">&lt; <?php if(isset($qnh_all[1])){if($qnh_all[0]<2500){echo '3000 m';}else{echo '1 SM';}}?></a></li>
+					<li><a href="javascript:void(0)" data-tab="1tabs4">&lt; <?php if(isset($qnh_all[1])){if($qnh_all[0]<2500){echo '5000 m';}else{echo '3 SM';}}?></a></li>
+					<li><a href="javascript:void(0)" data-tab="1tabs5">gusts</a></li>
+					<li><a href="javascript:void(0)" data-tab="1tabs6">variable wind</a></li>
+				</ul>
+				
+				<div class="tab-content" style="position:relative;" id="1tabs1">
+					METAR with <span class="blue">ceiling &lt; 500 ft</span>
+					<span class="small">
+					<?php 
+					if (isset($ifr_all[1]["ifr"])) {	
+						echo "(".round($ifr_all[1]["lifr"]*100/$nr_of_metar,1)."%";
+					 }
+					 ?>
+					 of total)</span>
+					 <br>
+					Wind rose <span class="blue toggle" id="rose_cloud_imc_on">ON</span> <span class="white toggle" id="rose_cloud_imc_off">OFF</span> <span class="blue">&#124;</span> Map <span class="white toggle" id="map2_on">ON</span> <span class="blue toggle" id="map2_off">OFF</span>
+					<div style="height:80vh">
+						<div id="map2" class="map"></div> 
+						<div id="rose_cloud_lifr" class="rose_chart"></div>
+						<div style="display:none">
+							<table id="freq_cld_lifr" border="0" cellspacing="0" cellpadding="0">
+								<tr>
+									<th colspan="9" class="hdr">Table of Frequencies (percent)</th>
+								</tr>
+								<tr nowrap>
+									<th class="freq">Direction</th>
+									<th class="freq">&lt; 5 kt</th>
+									<th class="freq">5-9 kt</th>
+									<th class="freq">10-14 kt</th>
+									<th class="freq">15-19 kt</th>
+									<th class="freq">&gt;= 20 kt</th>
+									<th class="freq">Total</th>
+								</tr>
+								<?php
+								if ($nr_of_metar != 0) {
+									for ($i=0;$i<360;$i+=10) {
+										echo '<tr nowrap>';
+										if ($i==0) {
+											$dir = 360;
+										}
+										else {
+											$dir = $i;
+										}
+										echo '<td class="dir">'.$dir.'&deg;</td>';
+										if (isset($dir_count_cld_imc["lifr"][$dir])) {
+											$dir_freq = round(($dir_count_cld_imc["lifr"][$dir]*100)/$wind_dir_count[$dir],1);
+										}
+										else {
+											$dir_freq = 0;
+										}
+										$row = $i/10;
+										echo '<td class="data">'.round((($wind_freqDir_cld["lifr"][$row][0])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["lifr"][$row][1])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["lifr"][$row][2])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["lifr"][$row][3])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["lifr"][$row][4])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.$dir_freq.'</td>';
+										echo '</tr>';
+									}
+								}
+								?>
+							</table>
+						</div>
+					</div>
+					Calm or variable wind:<span class="blue">
+					<?php 
+					if (isset($dir_count_cloud_imc["lifr"][0])) {
+						echo round(($dir_count_cloud_imc["lifr"][0]*100)/$ifr_all[1]["lifr"],1);
+					}
+					else {
+						echo 0;
+					}
+					?>%</span> 
+					<br>
+					<span class="small">(i.e. "00000KT" or "VRBXXKT")
+				</div>
 			
-				<div class="tab-content" style="position:relative;" id="tab1">
+				<div class="tab-content" style="position:relative;" id="1tabs2">
 					METAR with <span class="blue">ceiling &lt; 1000 ft</span>
 					<span class="small">
 					<?php 
-					if (isset($ifr_all[1])) {	
-						echo "(".round($ifr_all[1]*100/$nr_of_metar,1)."%";
+					if (isset($ifr_all[1]["ifr"])) {	
+						echo "(".round($ifr_all[1]["ifr"]*100/$nr_of_metar,1)."%";
 					 }
 					 ?>
 					 of total)</span>
@@ -458,18 +542,18 @@
 											$dir = $i;
 										}
 										echo '<td class="dir">'.$dir.'&deg;</td>';
-										if (isset($dir_count_cld_imc[$dir])) {
-											$dir_freq = round(($dir_count_cld_imc[$dir]*100)/$wind_dir_count[$dir],1);
+										if (isset($dir_count_cld_imc["ifr"][$dir])) {
+											$dir_freq = round(($dir_count_cld_imc["ifr"][$dir]*100)/$wind_dir_count[$dir],1);
 										}
 										else {
 											$dir_freq = 0;
 										}
 										$row = $i/10;
-										echo '<td class="data">'.round((($wind_freqDir_cld[$row][0])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_cld[$row][1])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_cld[$row][2])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_cld[$row][3])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_cld[$row][4])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["ifr"][$row][0])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["ifr"][$row][1])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["ifr"][$row][2])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["ifr"][$row][3])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_cld["ifr"][$row][4])*100)/$wind_dir_count[$dir],1).'</td>';
 										echo '<td class="data">'.$dir_freq.'</td>';
 										echo '</tr>';
 									}
@@ -480,8 +564,8 @@
 					</div>
 					Calm or variable wind:<span class="blue">
 					<?php 
-					if (isset($dir_count_cloud_imc[0])) {
-						echo round(($dir_count_cloud_imc[0]*100)/$ifr_all[1],1);
+					if (isset($dir_count_cloud_imc["ifr"][0])) {
+						echo round(($dir_count_cloud_imc["ifr"][0]*100)/$ifr_all[1]["ifr"],1);
 					}
 					else {
 						echo 0;
@@ -491,7 +575,7 @@
 					<span class="small">(i.e. "00000KT" or "VRBXXKT")
 				</div>
 				
-				<div class="tab-content" style="position:relative;" id="tab3">
+				<div class="tab-content" style="position:relative;" id="1tabs5">
 					METAR with <span class="blue">gusts</span>
 					<span class="small">
 					<?php 
@@ -552,12 +636,12 @@
 					</div>
 				</div>
 				
-				<div class="tab-content" style="position:relative;" id="tab2">
+				<div class="tab-content" style="position:relative;" id="1tabs4">
 					METAR with <span class="blue">visibility &lt; <?php if(isset($qnh_all[1])){if($qnh_all[0]<2500){echo '5000 m';}else{echo '3 SM';}}?></span>
 					<span class="small">
 					<?php 
-					if (isset($ifr_all[1])) {	
-						echo "(".round($ifr_all[2]*100/$nr_of_metar,1)."%";
+					if (isset($ifr_all[1]["ifr"])) {	
+						echo "(".round($ifr_all[2]["ifr"]*100/$nr_of_metar,1)."%";
 					 }
 					 ?>
 					 of total)</span>
@@ -591,18 +675,18 @@
 											$dir = $i;
 										}
 										echo '<td class="dir">'.$dir.'&deg;</td>';
-										if (isset($dir_count_vis_imc[$dir])) {
-											$dir_freq = round(($dir_count_vis_imc[$dir]*100)/$wind_dir_count[$dir],1);
+										if (isset($dir_count_vis_imc["ifr"][$dir])) {
+											$dir_freq = round(($dir_count_vis_imc["ifr"][$dir]*100)/$wind_dir_count[$dir],1);
 										}
 										else {
 											$dir_freq = 0;
 										}
 										$row = $i/10;
-										echo '<td class="data">'.round((($wind_freqDir_vis[$row][0])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_vis[$row][1])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_vis[$row][2])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_vis[$row][3])*100)/$wind_dir_count[$dir],1).'</td>';
-										echo '<td class="data">'.round((($wind_freqDir_vis[$row][4])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["ifr"][$row][0])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["ifr"][$row][1])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["ifr"][$row][2])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["ifr"][$row][3])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["ifr"][$row][4])*100)/$wind_dir_count[$dir],1).'</td>';
 										echo '<td class="data">'.$dir_freq.'</td>';
 										echo '</tr>';
 									}
@@ -613,8 +697,8 @@
 					</div>
 					Calm or variable wind:<span class="blue">
 					<?php 
-					if (isset($dir_count_vis_imc[0])) {
-						echo round(($dir_count_vis_imc[0]*100)/$ifr_all[2],1);
+					if (isset($dir_count_vis_imc["ifr"][0])) {
+						echo round(($dir_count_vis_imc["ifr"][0]*100)/$ifr_all[2]["ifr"],1);
 					}
 					else {
 						echo 0;
@@ -624,11 +708,83 @@
 					<span class="small">(i.e. "00000KT" or "VRBXXKT")
 				</div>
 				
-				<div class="tab-content" style="position:relative;" id="tab4">
+				<div class="tab-content" style="position:relative;" id="1tabs3">
+					METAR with <span class="blue">visibility &lt; <?php if(isset($qnh_all[1])){if($qnh_all[0]<2500){echo '3000 m';}else{echo '1 SM';}}?></span>
+					<span class="small">
+					<?php 
+					if (isset($ifr_all[1]["ifr"])) {	
+						echo "(".round($ifr_all[2]["lifr"]*100/$nr_of_metar,1)."%";
+					 }
+					 ?>
+					 of total)</span>
+					 <br>
+					Wind rose <span class="blue toggle" id="rose_vis_imc_on">ON</span> <span class="white toggle" id="rose_vis_imc_off">OFF</span> <span class="blue">&#124;</span> Map <span class="white toggle" id="map4_on">ON</span> <span class="blue toggle" id="map4_off">OFF</span>
+					<div style="height:80vh">
+					<div id="map4" class="map"></div> 
+					<div id="rose_vis_lifr" class="rose_chart"></div>
+						<div style="display:none">
+							<table id="freq_vis_lifr" border="0" cellspacing="0" cellpadding="0">
+								<tr>
+									<th colspan="9" class="hdr">Table of Frequencies (percent)</th>
+								</tr>
+								<tr nowrap>
+									<th class="freq">Direction</th>
+									<th class="freq">&lt; 5 kt</th>
+									<th class="freq">5-9 kt</th>
+									<th class="freq">10-14 kt</th>
+									<th class="freq">15-19 kt</th>
+									<th class="freq">&gt;= 20 kt</th>
+									<th class="freq">Total</th>
+								</tr>
+								<?php 
+								if ($nr_of_metar != 0) {
+									for ($i=0;$i<360;$i+=10) {
+										echo '<tr nowrap>';
+										if ($i==0) {
+											$dir = 360;
+										}
+										else {
+											$dir = $i;
+										}
+										echo '<td class="dir">'.$dir.'&deg;</td>';
+										if (isset($dir_count_vis_imc["lifr"][$dir])) {
+											$dir_freq = round(($dir_count_vis_imc["lifr"][$dir]*100)/$wind_dir_count[$dir],1);
+										}
+										else {
+											$dir_freq = 0;
+										}
+										$row = $i/10;
+										echo '<td class="data">'.round((($wind_freqDir_vis["lifr"][$row][0])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["lifr"][$row][1])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["lifr"][$row][2])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["lifr"][$row][3])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.round((($wind_freqDir_vis["lifr"][$row][4])*100)/$wind_dir_count[$dir],1).'</td>';
+										echo '<td class="data">'.$dir_freq.'</td>';
+										echo '</tr>';
+									}
+								}
+								?>
+							</table>
+						</div>
+					</div>
+					Calm or variable wind:<span class="blue">
+					<?php 
+					if (isset($dir_count_vis_imc["lifr"][0])) {
+						echo round(($dir_count_vis_imc["lifr"][0]*100)/$ifr_all[2]["lifr"],1);
+					}
+					else {
+						echo 0;
+					}
+					?>%</span>
+					<br>
+					<span class="small">(i.e. "00000KT" or "VRBXXKT")
+				</div>
+				
+				<div class="tab-content" style="position:relative;" id="1tabs6">
 					METAR with <span class="blue">variable wind direction</span>
 					<span class="small">
 					<?php 
-					if (isset($ifr_all[1])) {	
+					if (isset($ifr_all[1]["ifr"])) {	
 						echo "(".round($var_wind*100/$nr_of_metar,1)."%";
 					 }
 					 ?>
@@ -710,6 +866,21 @@
 			<h1 class="blue">Weather</h1>
 			(Precipitation includes all intensities, e.g. "RA" includes -RA, RA and +RA.)
 			<div id="weather_bar"></div>
+			<h2 class="blue">Frequency</h2>
+			<ul class="tabs">
+				<li><a href="javascript:void(0)" data-tab="2tabs1" class="defaulttab">FG/FZFG</a></li>
+				<li><a href="javascript:void(0)" data-tab="2tabs2">BR</a></li>
+				<li><a href="javascript:void(0)" data-tab="2tabs3">FZRA/FZDZ</a></li>
+			</ul>
+			<div class="tab-content" id="2tabs1">
+				<div id="fg_freq"></div>
+			</div>
+			<div class="tab-content" id="2tabs2">
+				<div id="br_freq"></div>
+			</div>
+			<div class="tab-content" id="2tabs3">
+				<div id="fzra_freq"></div>
+			</div>
 		</div>
 		
 	</div>
@@ -1086,6 +1257,87 @@
 			}
 		});
 		
+		$('#rose_cloud_lifr').highcharts({
+			data: {
+				table: 'freq_cld_lifr',
+				startRow: 1,
+				endRow: 37,
+				endColumn: 5
+			},
+			chart: {
+				polar: true,
+				type: 'column',
+				marginTop: 0,
+				backgroundColor:'transparent'
+			},
+			credits:{enabled: false},
+			exporting:{enabled: false},
+			legend: {
+				align: 'center',
+				layout: 'horizontal',
+				verticalAlign: 'bottom',
+				itemStyle: {
+					fontSize: '0.8vw'
+				},
+				x: 0,
+				y: 0
+			},
+			colors: ['white', '#4781bc', '#4a729b', '#3f5d7c', '#33495f'],
+			title: {
+                text: null
+            },
+			pane: {
+				size: '85%'
+			},
+			xAxis: {
+				tickmarkPlacement: 'on',
+				lineColor: '#33495f',
+				gridLineColor: '#33495f',
+				labels: {
+					enabled: true,
+					formatter: function () {
+						return this.value;
+					},
+					style: {
+						color: '#33495f',
+						fontSize: '0.8vw'
+					}
+				},
+			},
+			yAxis: {
+				min: 0,
+				gridLineColor: '#33495f',
+				endOnTick: false,
+				showLastLabel: true,
+				labels: {
+					formatter: function () {
+						return this.value + '%';
+					},
+					style: {
+						color: 'white',
+						fontSize: '0.8vw'
+					}
+				},
+				reversedStacks: false
+			},
+			tooltip: {
+				formatter: function() {
+					return 'The ceiling is <span style="color:#4781bc;">less than 500 ft</span> in<br> <span style="color:#4781bc;">' + this.total + '%</span> of METAR with wind direction <span style="color:#4781bc;">' + this.point.name + '</span>.<br> ('+ this.point.name + '/' + this.series.name + ': <span style="color:#4781bc;">' + this.y + '%</span>)';
+				},
+				style: {
+					fontSize: '0.8vw'
+				}
+			},
+			plotOptions: {
+				series: {
+					stacking: 'normal',
+					shadow: false,
+					groupPadding: 0,
+					pointPlacement: 'on'
+				}
+			}
+		});
+		
 		$('#rose_vis_imc').highcharts({
 			data: {
 				table: 'freq_vis',
@@ -1152,6 +1404,87 @@
 			tooltip: {
 				formatter: function() {
 					return 'The visibility is <span style="color:#4781bc;">less than 5000 m</span> in<br> <span style="color:#4781bc;">' + this.total + '%</span> of METAR with wind direction <span style="color:#4781bc;">' + this.point.name + '</span>.<br> ('+ this.point.name + '/' + this.series.name + ': <span style="color:#4781bc;">' + this.y + '%</span>)';
+				},
+				style: {
+					fontSize: '0.8vw'
+				}
+			},
+			plotOptions: {
+				series: {
+					stacking: 'normal',
+					shadow: false,
+					groupPadding: 0,
+					pointPlacement: 'on'
+				}
+			}
+		});
+		
+		$('#rose_vis_lifr').highcharts({
+			data: {
+				table: 'freq_vis_lifr',
+				startRow: 1,
+				endRow: 37,
+				endColumn: 5
+			},
+			chart: {
+				polar: true,
+				type: 'column',
+				marginTop: 0,
+				backgroundColor:'transparent'
+			},
+			credits:{enabled: false},
+			exporting:{enabled: false},
+			legend: {
+				align: 'center',
+				layout: 'horizontal',
+				verticalAlign: 'bottom',
+				itemStyle: {
+					fontSize: '0.8vw'
+				},
+				x: 0,
+				y: 0
+			},
+			colors: ['white', '#4781bc', '#4a729b', '#3f5d7c', '#33495f'],
+			title: {
+                text: null
+            },
+			pane: {
+				size: '85%'
+			},
+			xAxis: {
+				tickmarkPlacement: 'on',
+				lineColor: '#33495f',
+				gridLineColor: '#33495f',
+				labels: {
+					enabled: true,
+					formatter: function () {
+						return this.value;
+					},
+					style: {
+						color: '#33495f',
+						fontSize: '0.8vw'
+					}
+				},
+			},
+			yAxis: {
+				min: 0,
+				gridLineColor: '#33495f',
+				endOnTick: false,
+				showLastLabel: true,
+				labels: {
+					formatter: function () {
+						return this.value + '%';
+					},
+					style: {
+						color: 'white',
+						fontSize: '0.8vw'
+					}
+				},
+				reversedStacks: false
+			},
+			tooltip: {
+				formatter: function() {
+					return 'The visibility is <span style="color:#4781bc;">less than 3000 m</span> in<br> <span style="color:#4781bc;">' + this.total + '%</span> of METAR with wind direction <span style="color:#4781bc;">' + this.point.name + '</span>.<br> ('+ this.point.name + '/' + this.series.name + ': <span style="color:#4781bc;">' + this.y + '%</span>)';
 				},
 				style: {
 					fontSize: '0.8vw'
@@ -1424,89 +1757,262 @@
 			}]
 		});
 		
-		$('#fog_freq').highcharts({
-			data: {
-				csv: document.getElementById('fog_csv').innerHTML
-			},
+		$('#fg_freq').highcharts({
 
 			chart: {
 				type: 'heatmap',
-				margin: [60, 10, 80, 50]
+				backgroundColor: 'transparent'
 			},
-
+			credits:{enabled: false},
+			exporting:{enabled: false},
+			title: {
+				text: null
+			},
+		
 			boost: {
 				useGPUTranslations: true
 			},
-
-			title: {
-				text: 'Highcharts heat map',
-				align: 'left',
-				x: 40
-			},
-
-			subtitle: {
-				text: 'Temperature variation by day and hour through 2017',
-				align: 'left',
-				x: 40
-			},
-
+			
 			xAxis: {
-				type: 'datetime',
-				min: Date.UTC(2016, 0, 1),
-				max: Date.UTC(2016, 11, 31, 23, 59, 59),
-				labels: {
-					align: 'left',
-					x: 5,
-					y: 14,
-					format: '{value:%B}' // long month
-				},
-				showLastLabel: false,
-				tickLength: 16
+				categories: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+				max: 11,
+				min: 0
 			},
 
 			yAxis: {
-				title: {
-					text: null
-				},
-				labels: {
-					format: '{value}:00'
-				},
-				minPadding: 0,
-				maxPadding: 0,
-				startOnTick: false,
-				endOnTick: false,
+				title: null,
 				tickPositions: [0, 6, 12, 18, 24],
 				tickWidth: 1,
 				min: 0,
 				max: 23,
-				reversed: true
+			},
+			
+			tooltip: {
+				formatter: function() {
+					let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+					let firstHour = (this.y < 10) ? '0' + (this.y - 0.5) : (this.y - 0.5);
+					let secondHour = (this.y < 10) ? '0' + (this.y + 0.5) : (this.y + 0.5);
+					return months[this.point.x]	+ ' ' + firstHour + 'Z - ' + secondHour + 'Z: ' + this.point.value + ' metar';
+				}
 			},
 
 			colorAxis: {
 				stops: [
-					[0, '#3060cf'],
-					[0.5, '#fffbbc'],
-					[0.9, '#c4463a'],
-					[1, '#c4463a']
+					[0, 'white'],
+					[0.5, '#4781bc'],
+					[1.0, '#33495f']
 				],
-				min: 0,
-				max: 25,
 				startOnTick: false,
 				endOnTick: false,
-				labels: {
-					format: '{value}'
-				}
 			},
 
 			series: [{
-				boostThreshold: 100,
-				borderWidth: 0,
-				nullColor: '#EFEFEF',
-				colsize: 24 * 36e5, // one day
-				turboThreshold: Number.MAX_VALUE // #3404, remove after 4.0.5 release
-			}]
+				name: 'Frequency',
+				data: [				
+					<?php
+						foreach ($wx_freq["fg"] as $key => $value) {
+							$expl = explode(" ", $key);
+							$month = intval($expl[0]);
+							$hour = floatval($expl[1]);
+							if ($key != $last_key) {
+								echo '['.$month.','.$hour.','.floatval($value).'],';
+							} else {
+								echo '['.$month.','.$hour.','.floatval($value).']';
+							}
+						}
+					?>
+				]
+			}],
+
+			responsive: {
+				rules: [{
+					condition: {
+						maxWidth: 500
+					},
+					chartOptions: {
+						yAxis: {
+							labels: {
+								format: '{substr value 0 1}'
+							}
+						}
+					}
+				}]
+			}
+
 		});
 		
+		$('#fzra_freq').highcharts({
+
+			chart: {
+				type: 'heatmap',
+				backgroundColor: 'transparent'
+			},
+			credits:{enabled: false},
+			exporting:{enabled: false},
+			title: {
+				text: null
+			},
+		
+			boost: {
+				useGPUTranslations: true
+			},
+			
+			tooltip: {
+				formatter: function() {
+					let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+					let firstHour = (this.y < 10) ? '0' + (this.y - 0.5) : (this.y - 0.5);
+					let secondHour = (this.y < 10) ? '0' + (this.y + 0.5) : (this.y + 0.5);
+					return months[this.point.x]	+ ' ' + firstHour + 'Z - ' + secondHour + 'Z: ' + this.point.value + ' metar';
+				}
+			},
+			
+			xAxis: {
+				categories: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+				max: 11,
+				min: 0
+			},
+
+			yAxis: {
+				title: null,
+				tickPositions: [0, 6, 12, 18, 24],
+				tickWidth: 1,
+				min: 0,
+				max: 23,
+			},
+
+			colorAxis: {
+				stops: [
+					[0, 'white'],
+					[0.5, '#4781bc'],
+					[1.0, '#33495f']
+				],
+				startOnTick: false,
+				endOnTick: false,
+			},
+
+			series: [{
+				name: 'Frequency',
+				data: [				
+					<?php
+						foreach ($wx_freq["fzra"] as $key => $value) {
+							$expl = explode(" ", $key);
+							$month = intval($expl[0]);
+							$hour = floatval($expl[1]);
+							if ($key != $last_key) {
+								echo '['.$month.','.$hour.','.floatval($value).'],';
+							} else {
+								echo '['.$month.','.$hour.','.floatval($value).']';
+							}
+						}
+					?>
+				]
+			}],
+
+			responsive: {
+				rules: [{
+					condition: {
+						maxWidth: 500
+					},
+					chartOptions: {
+						yAxis: {
+							labels: {
+								format: '{substr value 0 1}'
+							}
+						}
+					}
+				}]
+			}
+
+		});
+		
+		$('#br_freq').highcharts({
+
+			chart: {
+				type: 'heatmap',
+				backgroundColor: 'transparent'
+			},
+			credits:{enabled: false},
+			exporting:{enabled: false},
+			title: {
+				text: null
+			},
+		
+			boost: {
+				useGPUTranslations: true
+			},
+			
+			tooltip: {
+				formatter: function() {
+					let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+					let firstHour = (this.y < 10) ? '0' + (this.y - 0.5) : (this.y - 0.5);
+					let secondHour = (this.y < 10) ? '0' + (this.y + 0.5) : (this.y + 0.5);
+					return months[this.point.x]	+ ' ' + firstHour + 'Z - ' + secondHour + 'Z: ' + this.point.value + ' metar';
+				}
+			},
+			
+			xAxis: {
+				categories: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+				max: 11,
+				min: 0
+			},
+
+			yAxis: {
+				title: null,
+				tickPositions: [0, 6, 12, 18, 24],
+				tickWidth: 1,
+				min: 0,
+				max: 23,
+			},
+			
+			tooltip: {    
+				enabled: false
+			},
+
+			colorAxis: {
+				stops: [
+				    [0, 'white'],
+					[0.5, '#4781bc'],
+					[1.0, '#33495f']
+				],
+				startOnTick: false,
+				endOnTick: false,
+			},
+
+			series: [{
+				name: 'Frequency',
+				data: [				
+					<?php
+						foreach ($wx_freq["br"] as $key => $value) {
+							$expl = explode(" ", $key);
+							$month = intval($expl[0]);
+							$hour = floatval($expl[1]);
+							if ($key != $last_key) {
+								echo '['.$month.','.$hour.','.floatval($value).'],';
+							} else {
+								echo '['.$month.','.$hour.','.floatval($value).']';
+							}
+						}
+					?>
+				]
+			}],
+
+			responsive: {
+				rules: [{
+					condition: {
+						maxWidth: 500
+					},
+					chartOptions: {
+						yAxis: {
+							labels: {
+								format: '{substr value 0 1}'
+							}
+						}
+					}
+				}]
+			}
+
+		});
+
 	});
 	</script>
 
